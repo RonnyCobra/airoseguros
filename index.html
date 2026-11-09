@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AIRŌ Seguros · Pipeline</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="window.initAuth&&initAuth()"></script>
+<style>
+:root{--bg:#2F3134;--bg2:#2A2C2F;--card:#35373B;--line:rgba(255,255,255,.1);--mut:#B0B3B8;--blue:#008CFF;--ok:#34d399;--bad:#f87171;--warn:#fbbf24;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:#fff;font:14px/1.45 "Space Grotesk",system-ui,sans-serif}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line)}
+.logo b{letter-spacing:.18em;font-size:18px;text-shadow:0 0 12px rgba(0,140,255,.85)}
+.logo i{font:italic 15px "Playfair Display",serif;margin-left:6px}
+.logo small{display:block;color:var(--mut);font-size:11px}
+button,.btn,select,input,textarea{font:inherit;color:inherit}
+button,.btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:999px;padding:7px 14px;text-decoration:none;display:inline-block}
+button:hover,.btn:hover{background:rgba(255,255,255,.12)}
+button.pri{background:var(--blue);border-color:var(--blue);box-shadow:0 0 12px rgba(0,140,255,.6)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:16px 20px 4px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.kpi span{color:var(--mut);font-size:12px}.kpi b{display:block;font-size:20px;margin:2px 0}.kpi small{color:var(--mut);font-size:11px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 20px}
+.tabs{display:flex;gap:6px;margin-right:auto}
+.tabs button.on{background:var(--blue);border-color:var(--blue)}
+.bar input,.bar select,dialog input,dialog select,dialog textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+main{padding:0 20px 40px}
+.board{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.col{flex:0 0 230px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:200px}
+.col.over{border-color:var(--blue);box-shadow:0 0 14px rgba(0,140,255,.45)}
+.col header{display:grid;grid-template-columns:1fr auto;margin-bottom:8px}
+.col header small{grid-column:1/3;color:var(--mut);font-size:11px}
+.cnt{background:rgba(255,255,255,.1);border-radius:999px;padding:0 8px;font-size:12px}
+.ganho .cnt{background:rgba(52,211,153,.2);color:var(--ok)}.perdido .cnt{background:rgba(248,113,113,.2);color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;cursor:grab}
+.card:active{cursor:grabbing}
+.m{color:var(--mut);font-size:12px}
+.chips{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
+.chip,.tag{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;background:rgba(255,255,255,.05)}
+.tag.bad,.chip.bad{color:var(--bad);border-color:var(--bad)}.tag.blue{color:var(--blue);border-color:var(--blue)}.tag.warn{color:var(--warn);border-color:var(--warn)}.tag.mut{color:var(--mut)}
+.act{color:var(--blue);font-size:12px}
+.btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.btns .btn,.btns select{font-size:11px;padding:3px 9px}
+.btns select{background:var(--bg2);border:1px solid var(--line);border-radius:999px;max-width:100px}
+button.add{width:100%;border-style:dashed;color:var(--mut);font-size:12px}
+.empty{color:var(--mut);font-size:12px;text-align:center;padding:14px 4px}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+table{border-collapse:collapse;width:100%;min-width:900px}
+th{text-align:left;color:var(--mut);font-weight:500;font-size:12px;padding:10px;background:rgba(0,0,0,.2)}
+td{padding:9px 10px;border-top:1px solid var(--line);white-space:nowrap}
+tr[data-id]{cursor:pointer}tr[data-id]:hover{background:rgba(255,255,255,.03)}
+td select{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 8px}
+.list{display:grid;gap:8px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer}
+.row>div:first-child{flex:1 1 220px}
+dialog{background:var(--bg2);color:#fff;border:1px solid var(--line);border-radius:16px;padding:0;width:min(580px,94vw)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog form{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog label{display:grid;gap:3px;font-size:12px;color:var(--mut)}
+dialog .full{grid-column:1/3}
+dialog .foot{grid-column:1/3;display:flex;gap:8px;justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;padding:8px 16px;border-radius:999px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+@media(max-width:560px){dialog form{grid-template-columns:1fr}dialog .full,dialog .foot{grid-column:1}}
+.chips2{display:flex;gap:8px}.chip2{border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:rgba(255,255,255,.05)}.chip2.bl{color:var(--blue);border-color:var(--blue);background:rgba(0,140,255,.12)}
+.tsec{margin-top:16px}.th2{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.th2 h3{margin:0;font-size:15px}
+.wrap input{background:transparent;border:0;border-bottom:1px solid transparent;padding:4px 0}.wrap input:focus{border-color:var(--blue);outline:0}
+.kcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:16px}
+.kpi{display:grid;grid-template-columns:1fr auto;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi b{grid-column:1/3;font-size:20px;margin-top:8px}.bdg{font-style:normal;font-size:11px;color:var(--blue);background:rgba(0,140,255,.15);border-radius:999px;padding:1px 9px}
+[hidden]{display:none!important}
+#login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 0,rgba(0,140,255,.18),transparent 60%),var(--bg)}
+.lcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:36px 32px;width:min(420px,100%);text-align:center}
+.lcard .logo b{font-size:30px}.lcard .logo i{font-size:22px}
+.lcard h1{font-size:18px;margin:24px 0 8px}.lcard p{color:var(--mut);font-size:13px;margin:0 0 22px}.lcard p.fine{font-size:11px;margin:18px 0 0}
+.gbtn{display:inline-flex;gap:10px;align-items:center;background:#fff;color:#1f1f1f;border:0;font-weight:700;padding:11px 22px;border-radius:999px}.gbtn:hover{background:#eaf3ff}
+.lerr{color:var(--bad);font-size:12px;margin-top:14px;min-height:16px}
+.sync{font-size:12px}.sync.ok{color:var(--ok);border-color:var(--ok)}.sync.err{color:var(--bad);border-color:var(--bad)}.sync.wait{color:var(--warn);border-color:var(--warn)}
+.usr{display:flex;gap:8px;align-items:center;color:var(--mut);font-size:12px}.usr img{border-radius:50%}
+</style></head><body>
+<div id="login"><div class="lcard">
+ <div class="logo"><b>AIRŌ</b><i>seguros</i><small>Pipeline comercial</small></div>
+ <h1>Entre para acessar seu pipeline</h1>
+ <p>Use sua conta Google. Seus leads ficam salvos em uma planilha do Google Sheets no seu próprio Drive e são recuperados automaticamente a cada login.</p>
+ <button class="gbtn" id="gin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Entrar com Google</button>
+ <div class="lerr" id="lerr" role="alert"></div>
+ <p class="fine">O app só acessa arquivos que ele mesmo criou no seu Drive.</p>
+</div></div>
+<div id="app" hidden>
+<header class="top">
+ <div class="logo"><b>AIRŌ</b><i>seguros</i><small>Pipeline comercial</small></div>
+ <div class="acts">
+  <button id="sync" class="sync wait">Conectando…</button><button id="ref" title="Recarregar da planilha" aria-label="Recarregar da planilha">↻</button><a id="sheetlink" class="btn" target="_blank" rel="noopener" hidden>Abrir planilha</a><button id="imp">Importar Excel</button><button id="exp">Exportar Excel</button><button class="pri" id="new">Novo lead</button><span class="usr"><img id="av" alt="" width="28" height="28" referrerpolicy="no-referrer"><span id="un"></span></span><button id="out">Sair</button>
+  <input type="file" id="file" accept=".xlsx,.xls,.csv" hidden>
+ </div>
+</header>
+<div class="bar"><div class="tabs" id="tabs"></div></div>
+<div class="bar"><div class="tabs" id="stf"></div><span class="chips2" id="chips"></span></div>
+<div class="bar">
+ <input id="q" type="search" placeholder="Buscar cliente, contato, origem" aria-label="Buscar">
+ <select id="fp" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
+</div>
+<main id="view"></main>
+<dialog id="dlg"><form id="f">
+ <label class="full">Cliente<input name="cliente" required></label>
+ <label>Contato (telefone ou e-mail)<input name="contato"></label>
+ <label>Produto<select name="produto"></select></label>
+ <label>Valor (prêmio ou carta, R$)<input name="valor" type="number" min="0" step="any"></label>
+ <label>Comissão (%)<input name="pct" type="number" min="0" max="100" step="any"></label>
+ <label>Etapa<select name="etapa"></select></label>
+ <label>Origem<input name="origem" list="orig"></label>
+ <label class="full">Próxima ação<input name="proxAcao"></label>
+ <label>Data da ação<input name="dataAcao" type="date"></label>
+ <label>Vencimento da apólice<input name="vencimento" type="date"></label>
+ <label class="full" id="mot">Motivo da perda<input name="motivo"></label>
+ <label class="full">Observações<textarea name="obs" rows="3"></textarea></label>
+ <datalist id="orig"><option>WhatsApp<option>Instagram<option>Indicação<option>Site<option>Google<option>Papelaria</datalist>
+ <div class="foot"><button type="button" id="del">Excluir</button><button type="button" id="cancel">Cancelar</button><button class="pri">Salvar</button></div>
+</form></dialog>
+</div>
+<div id="toast" role="status"></div>
+<script>
+const STAGES=[["Lead Novo","Registrar em até 5 min","5 min"],["Contato Inicial","Ligar ou chamar no WhatsApp","1h"],["Qualificado","Entender necessidade e perfil","24h"],["Cotação Enviada","Enviar 2–3 opções comparadas","24h"],["Negociação","Tirar dúvidas, gerar urgência","48h"],["Fechado Ganho","Emitir apólice, onboarding","imediato"],["Fechado Perdido","Registrar o motivo da perda","—"],["Pós-venda / Renovação","Acompanhar sinistro e renovação","60 dias antes"]];
+const PRODS={"Auto":20,"Residencial":25,"Vida":30,"Saúde":15,"Empresarial":20,"Consórcio Auto":5,"Consórcio Imóvel":5,"Consultoria Risco":100};
+const KEY="airo_pipeline_v1",CORRETOR="Adriano, da AIRŌ Seguros";
+const $=s=>document.querySelector(s);
+const n=s=>String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const pad=x=>String(x).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>iso(new Date());
+const dias=s=>s?Math.round((new Date(s+"T00:00:00")-new Date(today()+"T00:00:00"))/864e5):null;
+const brl=v=>(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sum=(a,f)=>a.reduce((t,x)=>t+f(x),0);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const dig=s=>(s||"").replace(/\D/g,"");
+const WON=["Fechado Ganho","Pós-venda / Renovação"],DONE=["Fechado Ganho","Fechado Perdido"];
+const isOpen=l=>!WON.includes(l.etapa)&&l.etapa!=="Fechado Perdido",isWon=l=>WON.includes(l.etapa);
+const comm=l=>(l.valor||0)*(l.pct??PRODS[l.produto]??0)/100;
+const late=l=>l.dataAcao&&dias(l.dataAcao)<0&&!DONE.includes(l.etapa);
+
+let S={leads:[],tab:"funil",q:"",prod:"",st:""},editing=null,delArmed=false;
+const save=()=>{if(!user)return;try{localStorage.setItem(CK(),JSON.stringify(S.leads))}catch(e){}sched()};
+const find=id=>S.leads.find(l=>l.id===id);
+const F=()=>S.leads.filter(l=>(!S.prod||l.produto===S.prod)&&(!S.st||S.tab!=="funil"||l.etapa===S.st)&&(!S.q||n(l.cliente+" "+l.contato+" "+l.origem+" "+l.obs).includes(n(S.q))));
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2600)}
+
+function waLink(l){const d=dig(l.contato),num=d.length<=11?"55"+d:d,p=(l.cliente||"").split(" ")[0],v=dias(l.vencimento);let m;
+ if(["Cotação Enviada","Negociação"].includes(l.etapa))m=`Oi ${p}, tudo bem? Passando para saber se você conseguiu analisar a proposta de ${l.produto}. Posso ajustar alguma cobertura?`;
+ else if(l.etapa==="Pós-venda / Renovação"||(v!==null&&v<=60&&v>=0))m=`${p}, sua apólice vence${v!==null?" em "+v+" dias":" em breve"}. Já revisei as coberturas e posso cuidar da renovação. Vamos conversar?`;
+ else m=`Olá ${p}! Aqui é o ${CORRETOR}. Como posso ajudar com seu seguro de ${l.produto}?`;
+ return `https://wa.me/${num}?text=${encodeURIComponent(m)}`}
+function links(l){const d=dig(l.contato);let h="";
+ if(d.length>=10)h+=`<a class="btn" target="_blank" rel="noopener" href="${waLink(l)}">WhatsApp</a><a class="btn" href="tel:+${d.length<=11?"55"+d:d}">Ligar</a>`;
+ if((l.contato||"").includes("@"))h+=`<a class="btn" href="mailto:${esc(l.contato)}">E-mail</a>`;return h}
+const stageSel=l=>`<select data-mv="${l.id}" aria-label="Mover lead">${STAGES.map(([s])=>`<option${s===l.etapa?" selected":""}>${s}</option>`).join("")}</select>`;
+const cls=s=>s==="Fechado Ganho"?"ganho":s==="Fechado Perdido"?"perdido":"";
+
+function kpis(){const L=S.leads,gn=L.filter(isWon),pd=L.filter(l=>l.etapa==="Fechado Perdido");
+ const conv=gn.length+pd.length?Math.round(100*gn.length/(gn.length+pd.length))+"%":"—";
+ const tk=a=>a.length?sum(a,l=>l.valor)/a.length:0,pc=(a,b)=>b>0?Math.round(100*(a-b)/b):null;
+ const d=new Date(),M=iso(d).slice(0,7),P=iso(new Date(d.getFullYear(),d.getMonth()-1,1)).slice(0,7),inM=m=>l=>(l.fechadoEm||l.dataEntrada||"").slice(0,7)===m;
+ const cur=gn.filter(inM(M)),prev=gn.filter(inM(P)),cd=pc(sum(cur,comm),sum(prev,comm)),td=pc(tk(cur),tk(prev));
+ const ren=L.filter(l=>{const x=dias(l.vencimento);return x!==null&&x>=0&&x<=60}).length;
+ const cnt={};L.forEach(l=>{const o=(l.origem||"").trim();if(o)cnt[o]=(cnt[o]||0)+1});
+ const tot=sum(Object.values(cnt),x=>x),top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([o,c])=>o+" "+Math.round(100*c/tot)+"%");
+ $("#chips").innerHTML=`<span class="chip2">Ticket Médio: <b>${gn.length?brl(tk(gn)):"—"}</b></span><span class="chip2 bl">Conversão: ${conv}</span>`;
+ const k=$("#kcards");if(k)k.innerHTML=[["Comissão mês",brl(sum(cur,comm)),cd===null?"—":(cd>=0?"+":"")+cd+"%"],["Renovação 60d",ren+" apólices",ren?"Alerta ativo":"Sem alertas"],["Ticket médio",gn.length?brl(tk(gn)):"—",td===null?"—":(td>=0?"↑ ":"↓ ")+Math.abs(td)+"%"],["Origem top",top[0]||"—",top[1]||""]].map(c=>`<div class="kpi"><span class="m">${c[0]}</span>${c[2]?`<em class="bdg">${c[2]}</em>`:"<em></em>"}<b>${c[1]}</b></div>`).join("")}
+function tabs(){const hj=S.leads.filter(l=>l.dataAcao&&!DONE.includes(l.etapa)&&dias(l.dataAcao)<=0).length;
+ $("#tabs").innerHTML=[["funil","Pipeline"],["hoje","Hoje"+(hj?" ("+hj+")":"")],["renov","Renovações"]].map(([k,t])=>`<button data-tab="${k}" class="${S.tab===k?"on":""}">${t}</button>`).join("");
+ $("#stf").innerHTML=S.tab==="funil"?["Todos","Lead Novo","Qualificado","Cotação Enviada","Fechado Ganho"].map(x=>{const v=x==="Todos"?"":x;return `<button data-stf="${v}" class="${S.st===v?"on":""}">${x}</button>`}).join(""):""}
+
+const card=l=>{const d=dias(l.dataAcao);return `<div class="card" draggable="true" data-id="${l.id}"><b>${esc(l.cliente)}</b><div class="m">${esc(l.produto)} · ${brl(l.valor)}</div>
+<div class="chips">${l.origem?`<span class="chip">${esc(l.origem)}</span>`:""}${late(l)?'<span class="chip bad">atrasada</span>':""}</div>
+<div class="act">${esc(l.proxAcao||"Definir próxima ação")}${l.dataAcao?" · "+l.dataAcao.split("-").reverse().slice(0,2).join("/"):""}</div>
+<div class="btns">${links(l)}${stageSel(l)}</div></div>`};
+function funil(){return board()+tableSec()+'<div class="kcards" id="kcards"></div>'}
+function board(){return '<div class="board">'+STAGES.map(([s,o,sla])=>{const ls=F().filter(l=>l.etapa===s);
+ return `<section class="col ${cls(s)}" data-st="${s}"><header title="${o}"><b>${s}</b><span class="cnt">${ls.length}</span><small>${brl(sum(ls,l=>l.valor))} · SLA ${sla}</small></header>${ls.map(card).join("")||'<p class="empty">Arraste um lead para cá</p>'}<button class="add" data-add="${s}">+ Novo lead</button></section>`}).join("")+"</div>"}
+const inp=(l,f,w,c="")=>`<input data-f="${f}" data-id="${l.id}" value="${esc(l[f]??"")}" style="width:${w}px;${c}" aria-label="${f}">`;
+function tableSec(){const ls=F();return `<div class="tsec"><div class="th2"><h3>Tabela Pipeline · AIRŌ Seguros</h3><button data-addrow style="background:#fff;color:#000;font-weight:700">+ Linha</button></div><div class="wrap"><table><thead><tr><th>Cliente<th>Contato<th>Produto<th>Valor<th>Etapa<th>Origem<th>Próx. ação<th>Comissão<th></tr></thead><tbody>${ls.map(l=>`<tr><td>${inp(l,"cliente",140)}<td>${inp(l,"contato",150)}<td><select data-f="produto" data-id="${l.id}">${Object.keys(PRODS).map(p=>`<option${p===l.produto?" selected":""}>${p}</option>`).join("")}</select><td><input data-f="valor" data-id="${l.id}" value="${brl(l.valor)}" style="width:100px" aria-label="valor"><td>${stageSel(l)}<td>${inp(l,"origem",100)}<td>${inp(l,"proxAcao",150,"color:var(--blue)")}<td>${brl(comm(l))} (${l.pct??0}%)<td><button data-edit="${l.id}">Editar</button></tr>`).join("")||'<tr><td colspan="9" class="empty">Nenhum lead encontrado</tr>'}</tbody></table></div></div>`}
+const rowHtml=(l,tag,sub)=>`<div class="row" data-id="${l.id}"><div><b>${esc(l.cliente)}</b><div class="m">${esc(sub)}</div></div><span class="tag ${tag[0]}">${tag[1]}</span><div class="btns">${links(l)}</div></div>`;
+function hoje(){const ls=F().filter(l=>l.dataAcao&&l.etapa!=="Fechado Perdido"&&dias(l.dataAcao)<=7).sort((a,b)=>a.dataAcao.localeCompare(b.dataAcao));
+ if(!ls.length)return '<p class="empty">Nada para os próximos 7 dias. Preencha “Data da ação” nos leads para montar sua agenda.</p>';
+ return '<div class="list">'+ls.map(l=>{const d=dias(l.dataAcao);return rowHtml(l,d<0?["bad","Atrasada há "+(-d)+"d"]:d===0?["blue","Hoje"]:["mut","Em "+d+" dias"],(l.proxAcao||"Sem ação definida")+" · "+l.produto+" · "+brl(l.valor))}).join("")+"</div>"}
+function renov(){const ls=F().filter(l=>l.vencimento).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+ if(!ls.length)return '<p class="empty">Informe o vencimento da apólice no lead para receber os avisos de renovação aqui.</p>';
+ return '<div class="list">'+ls.map(l=>{const d=dias(l.vencimento);return rowHtml(l,d<0?["bad","Vencida há "+(-d)+"d"]:d<=30?["warn","Vence em "+d+" dias"]:d<=60?["blue","Vence em "+d+" dias"]:["mut","Em "+d+" dias"],l.produto+" · "+brl(l.valor)+" · vence "+l.vencimento.split("-").reverse().join("/"))}).join("")+"</div>"}
+function render(){tabs();const v=$("#view"),b=v.querySelector(".board"),x=b?b.scrollLeft:0;v.innerHTML=({funil,hoje,renov})[S.tab]();const nb=v.querySelector(".board");if(nb)nb.scrollLeft=x;kpis()}
+
+function moveTo(id,et){const l=find(id);if(!l||l.etapa===et)return render();if(et==="Fechado Perdido")return openForm(id,et);l.etapa=et;if(WON.includes(et)&&!l.fechadoEm)l.fechadoEm=today();save();render();toast("Movido para "+et)}
+function motToggle(){$("#mot").style.display=$("#f").elements.etapa.value==="Fechado Perdido"?"":"none"}
+function openForm(id,et){editing=id;delArmed=false;const f=$("#f"),l=id?find(id):{etapa:et||"Lead Novo",produto:"Auto",pct:PRODS.Auto};
+ ["cliente","contato","produto","valor","pct","etapa","origem","proxAcao","dataAcao","vencimento","motivo","obs"].forEach(k=>f.elements[k].value=l[k]??"");
+ if(et)f.elements.etapa.value=et;$("#del").style.display=id?"":"none";$("#del").textContent="Excluir";motToggle();$("#dlg").showModal()}
+$("#f").addEventListener("submit",e=>{e.preventDefault();const el=e.target.elements,g=k=>el[k].value.trim();
+ const d={cliente:g("cliente"),contato:g("contato"),produto:g("produto"),valor:parseFloat(el.valor.value)||0,pct:parseFloat(el.pct.value)||0,etapa:g("etapa"),origem:g("origem"),proxAcao:g("proxAcao"),dataAcao:g("dataAcao"),vencimento:g("vencimento"),motivo:g("motivo"),obs:g("obs")};
+ const L=editing?find(editing):{id:uid(),dataEntrada:today()};Object.assign(L,d);if(!editing)S.leads.push(L);if(WON.includes(L.etapa)&&!L.fechadoEm)L.fechadoEm=today();
+ save();$("#dlg").close();render();toast("Lead salvo")});
+$("#f").elements.produto.addEventListener("change",e=>{$("#f").elements.pct.value=PRODS[e.target.value]??0});
+$("#f").elements.etapa.addEventListener("change",motToggle);
+$("#cancel").onclick=()=>$("#dlg").close();
+$("#del").onclick=e=>{if(!delArmed){delArmed=true;e.target.textContent="Confirmar exclusão";return}S.leads=S.leads.filter(l=>l.id!==editing);save();$("#dlg").close();render();toast("Lead excluído")};
+
+function parseMoney(v){if(typeof v==="number")return v;let s=String(v).toLowerCase();const k=/\dk\b|\d\s*k\b/.test(s)?1000:1;s=s.replace(/[^\d,.]/g,"");
+ if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");else if(/\.\d{3}(\.|$)/.test(s))s=s.replace(/\./g,"");return(parseFloat(s)||0)*k}
+function pdate(v){if(!v)return"";if(typeof v==="number"&&v>20000){const d=new Date(Math.round((v-25569)*864e5));return d.getUTCFullYear()+"-"+pad(d.getUTCMonth()+1)+"-"+pad(d.getUTCDate())}if(v instanceof Date)return iso(new Date(v.getTime()+6*36e5));const s=String(v);let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?m[3]+"-"+pad(m[2])+"-"+pad(m[1]):""}
+function stage(v){const s=n(v);const hit=STAGES.find(([x])=>n(x)===s);return hit?hit[0]:(s.includes("proposta")||s.includes("cotacao"))?"Cotação Enviada":"Lead Novo"}
+const g=(x,...k)=>{for(const key in x)if(k.includes(n(key)))return x[key];return""};
+function mk(x){const cl=String(g(x,"cliente")).trim();if(!cl)return null;
+ const raw=String(g(x,"produto interesse","produto")).trim(),prod=Object.keys(PRODS).find(p=>n(raw).startsWith(n(p)))||"Auto";
+ let obs=String(g(x,"observacoes")).trim();if(raw&&n(raw)!==n(prod)&&!obs.includes("Produto informado"))obs=(obs?obs+" · ":"")+"Produto informado: "+raw;
+ const pct=parseFloat(g(x,"comissao %"));
+ return{id:String(g(x,"id")).trim()||uid(),cliente:cl,contato:String(g(x,"contato")).trim(),produto:prod,valor:parseMoney(g(x,"valor estimado","valor")),pct:isNaN(pct)?PRODS[prod]:pct,etapa:stage(g(x,"etapa pipeline","etapa")),dataEntrada:pdate(g(x,"data entrada"))||today(),origem:String(g(x,"origem lead","origem")).trim(),proxAcao:String(g(x,"proxima acao")).trim(),dataAcao:pdate(g(x,"data da acao")),vencimento:pdate(g(x,"vencimento apolice","vencimento")),motivo:String(g(x,"motivo perda")).trim(),fechadoEm:pdate(g(x,"data fechamento")),obs}}
+function importFile(file){const r=new FileReader();r.onload=()=>{try{
+ const wb=XLSX.read(r.result,{type:"array",cellDates:true});
+ const pc=wb.Sheets["Produtos_Comissoes"];if(pc)XLSX.utils.sheet_to_json(pc,{defval:""}).forEach(x=>{const p=String(g(x,"produto")).trim(),c=parseFloat(g(x,"comissao media %","comissao medio %"));if(p&&!isNaN(c)&&PRODS[p]!==undefined)PRODS[p]=c});
+ const ws=wb.Sheets["Pipeline_Vendas"]||wb.Sheets[wb.SheetNames[0]];let add=0,skip=0;
+ XLSX.utils.sheet_to_json(ws,{defval:""}).forEach(x=>{const l=mk(x);if(!l)return;if(S.leads.some(o=>o.id===l.id||(n(o.cliente)===n(l.cliente)&&dig(o.contato)===dig(l.contato)&&o.produto===l.produto)))skip++;else{S.leads.push(l);add++}});
+ save();render();toast(add+" importados"+(skip?" · "+skip+" já existiam":""))}catch(e){toast("Não consegui ler este arquivo")}};r.readAsArrayBuffer(file)}
+function exportXlsx(){if(typeof XLSX==="undefined")return toast("Biblioteca Excel não carregou. Verifique a internet.");
+ const wb=XLSX.utils.book_new(),A=(rows,name)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),name);
+ A(S.leads.map(l=>({"Cliente":l.cliente,"Contato":l.contato,"Produto Interesse":l.produto,"Valor Estimado":l.valor,"Comissão %":l.pct,"Etapa Pipeline":l.etapa,"Data Entrada":l.dataEntrada,"Origem Lead":l.origem,"Próxima Ação":l.proxAcao,"Data da Ação":l.dataAcao,"Vencimento Apólice":l.vencimento,"Motivo Perda":l.motivo,"Data Fechamento":l.fechadoEm||"","Observações":l.obs})),"Pipeline_Vendas");
+ A(STAGES.map(([e,o,s])=>({"Etapa":e,"O que fazer":o,"SLA":s})),"Etapas_Funil");
+ A(Object.entries(PRODS).map(([p,c])=>({"Produto":p,"Comissão Média %":c})),"Produtos_Comissoes");
+ XLSX.writeFile(wb,"Pipeline_AIRO_Seguros.xlsx")}
+
+document.addEventListener("click",e=>{const t=e.target;
+ const tb=t.closest("[data-tab]");if(tb){S.tab=tb.dataset.tab;return render()}
+ const sf=t.closest("[data-stf]");if(sf){S.st=sf.dataset.stf;return render()}
+ if(t.dataset.edit)return openForm(t.dataset.edit);
+ if(t.dataset.addrow!==undefined){S.leads.push({id:uid(),cliente:"Novo cliente",contato:"",produto:"Auto",valor:0,pct:PRODS.Auto,etapa:"Lead Novo",dataEntrada:today(),origem:"",proxAcao:"",dataAcao:"",vencimento:"",motivo:"",obs:""});save();render();return toast("Linha adicionada")}
+ if(t.dataset.add!==undefined)return openForm(null,t.dataset.add);
+ if(t.closest("a,select,button,input"))return;
+ const r=t.closest("[data-id]");if(r)openForm(r.dataset.id)});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset.mv)return moveTo(t.dataset.mv,t.value);
+ if(t.dataset.f){const l=find(t.dataset.id);if(!l)return;const f=t.dataset.f;l[f]=f==="valor"?parseMoney(t.value):t.value.trim();if(f==="produto")l.pct=PRODS[l.produto]??0;save();f==="valor"||f==="produto"?render():kpis()}});
+document.addEventListener("dragstart",e=>{const c=e.target.closest&&e.target.closest(".card");if(c)e.dataTransfer.setData("text/plain",c.dataset.id)});
+document.addEventListener("dragover",e=>{const c=e.target.closest(".col");if(c){e.preventDefault();c.classList.add("over")}});
+document.addEventListener("dragleave",e=>{const c=e.target.closest(".col");if(c&&!c.contains(e.relatedTarget))c.classList.remove("over")});
+document.addEventListener("drop",e=>{const c=e.target.closest(".col");if(!c)return;e.preventDefault();moveTo(e.dataTransfer.getData("text/plain"),c.dataset.st)});
+$("#q").oninput=e=>{S.q=e.target.value;render()};$("#fp").onchange=e=>{S.prod=e.target.value;render()};
+$("#new").onclick=()=>openForm(null);$("#exp").onclick=exportXlsx;$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{if(e.target.files[0])importFile(e.target.files[0]);e.target.value=""};
+const opts=a=>a.map(x=>`<option>${x}</option>`).join("");
+$("#f").elements.produto.innerHTML=opts(Object.keys(PRODS));$("#f").elements.etapa.innerHTML=opts(STAGES.map(s=>s[0]));$("#fp").innerHTML+=opts(Object.keys(PRODS));
+render();
+
+/* ===== Google: login + Sheets ===== */
+const CLIENT_ID="404328707932-58jro7m7rh9h83vh21m5n52ap2bdesvf.apps.googleusercontent.com";
+const SCOPES="openid email profile https://www.googleapis.com/auth/drive.file",TITLE="Pipeline AIRŌ Seguros";
+const HEAD=["ID","Cliente","Contato","Produto Interesse","Valor Estimado","Comissão %","Etapa Pipeline","Data Entrada","Origem Lead","Próxima Ação","Data da Ação","Vencimento Apólice","Motivo Perda","Data Fechamento","Observações"];
+const toRow=l=>[l.id,l.cliente,l.contato,l.produto,l.valor,l.pct,l.etapa,l.dataEntrada,l.origem,l.proxAcao,l.dataAcao,l.vencimento,l.motivo,l.fechadoEm||"",l.obs];
+var tc,tok=null,exp=0,user=null,sid=null,starting=false,auto=false,waiters=[],timer,busy=false,again=false,pend=false,syncState="";
+const CK=()=>KEY+"_"+user.sub,DK=()=>"airo_dirty_"+user.sub,SK=()=>"airo_sid_"+user.sub,dirty=()=>user&&localStorage.getItem(DK())==="1";
+function setSync(st,msg){syncState=st;const b=$("#sync");b.className="sync "+({ok:"ok",wait:"wait",err:"err",auth:"err"}[st]||"");b.textContent=msg||({ok:"✓ Salvo no Google Sheets",err:"Erro ao salvar · tentar de novo",auth:"Sessão expirada · reconectar"}[st]||"")}
+function loginErr(c){if(auto){auto=false;return}$("#lerr").textContent=({popup_closed:"Login cancelado.",access_denied:"Acesso negado."})[c]||"Não foi possível entrar ("+c+").";if(user)setSync("auth")}
+function initAuth(){if(tc||!window.google||!google.accounts)return;
+ if(CLIENT_ID.startsWith("COLE_")){$("#lerr").textContent="Configure o CLIENT_ID no início do script (veja o guia).";return}
+ tc=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,
+  callback:r=>{auto=false;if(r.error){waiters.splice(0).forEach(w=>w[1](r.error));return loginErr(r.error)}tok=r.access_token;exp=Date.now()+(r.expires_in-90)*1000;waiters.splice(0).forEach(w=>w[0](tok));if(!user&&!starting)startSession()},
+  error_callback:e=>{waiters.splice(0).forEach(w=>w[1](e.type));loginErr(e.type)}});
+ const h=localStorage.getItem("airo_hint");if(h){auto=true;tc.requestAccessToken({prompt:"",hint:h})}}
+const getTok=()=>Date.now()<exp?Promise.resolve(tok):new Promise((ok,no)=>{waiters.push([ok,no]);tc.requestAccessToken({prompt:"",hint:user&&user.email})});
+async function gj(url,o={}){const t=await getTok();const r=await fetch(url,{...o,headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"}});
+ if(r.status===401&&!o.retry){exp=0;return gj(url,{...o,retry:1})}
+ if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}return r.json()}
+const sh=(p,o)=>gj("https://sheets.googleapis.com/v4/spreadsheets/"+sid+(p[0]==="?"?p:"/"+p),o);
+async function locate(){const K=SK();sid=localStorage.getItem(K);
+ if(sid){try{await sh("?fields=spreadsheetId");return}catch(e){if(e.status!==404&&e.status!==403)throw e;sid=null}}
+ const q=encodeURIComponent("name='"+TITLE+"' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false");
+ const r=await gj("https://www.googleapis.com/drive/v3/files?q="+q+"&orderBy=createdTime&fields=files(id)");
+ if(r.files&&r.files[0])sid=r.files[0].id;else{
+  const c=await gj("https://sheets.googleapis.com/v4/spreadsheets",{method:"POST",body:JSON.stringify({properties:{title:TITLE},sheets:["Pipeline_Vendas","Etapas_Funil","Produtos_Comissoes"].map(t=>({properties:{title:t}}))})});sid=c.spreadsheetId;
+  await sh("values:batchUpdate",{method:"POST",body:JSON.stringify({valueInputOption:"RAW",data:[{range:"Etapas_Funil!A1",values:[["Etapa","O que fazer","SLA"],...STAGES]},{range:"Produtos_Comissoes!A1",values:[["Produto","Comissão Média %"],...Object.entries(PRODS)]}]})})}
+ localStorage.setItem(K,sid)}
+async function pull(silent){const d=await sh("values/"+encodeURIComponent("Pipeline_Vendas!A1:O")+"?valueRenderOption=UNFORMATTED_VALUE"),v=d.values||[];
+ if(!v.length){try{S.leads=JSON.parse(localStorage.getItem(CK())||"[]")}catch(e){S.leads=[]}render();return push()}
+ const H=v[0];S.leads=v.slice(1).map(r=>{const x={};H.forEach((h,i)=>x[h]=r[i]??"");return mk(x)}).filter(Boolean);
+ try{localStorage.setItem(CK(),JSON.stringify(S.leads))}catch(e){}
+ render();setSync("ok");if(!silent)toast("Dados atualizados da planilha")}
+function sched(){if(!sid)return;localStorage.setItem(DK(),"1");pend=true;setSync("wait","Salvando em instantes…");clearTimeout(timer);timer=setTimeout(push,1200)}
+async function push(){if(!sid)return;if(busy){again=true;return}busy=true;pend=false;clearTimeout(timer);setSync("wait","Salvando…");
+ try{const rows=[HEAD,...S.leads.map(toRow)];
+  await sh("values/"+encodeURIComponent("Pipeline_Vendas!A1")+"?valueInputOption=RAW",{method:"PUT",body:JSON.stringify({values:rows})});
+  try{await sh("values/"+encodeURIComponent("Pipeline_Vendas!A"+(rows.length+1)+":O")+":clear",{method:"POST",body:"{}"})}catch(e){}
+  if(!pend&&!again)localStorage.removeItem(DK());setSync("ok")}catch(e){setSync(typeof e==="string"?"auth":"err")}
+ busy=false;if(again){again=false;push()}}
+async function startSession(){starting=true;try{
+ user=await gj("https://www.googleapis.com/oauth2/v3/userinfo");localStorage.setItem("airo_hint",user.email);
+ $("#login").hidden=true;$("#app").hidden=false;$("#un").textContent=user.name||user.email;$("#av").src=user.picture||"";
+ setSync("wait","Carregando da planilha…");await locate();
+ const a=$("#sheetlink");a.href="https://docs.google.com/spreadsheets/d/"+sid;a.hidden=false;
+ if(dirty()){try{S.leads=JSON.parse(localStorage.getItem(CK())||"[]")}catch(e){S.leads=[]}render();await push()}else await pull(true)
+}catch(e){user=null;sid=null;$("#app").hidden=true;$("#login").hidden=false;
+ $("#lerr").textContent=e&&e.status===403?"Ative as APIs Google Sheets e Google Drive no projeto do Google Cloud.":"Não foi possível conectar. Tente de novo."}
+ starting=false}
+$("#gin").onclick=()=>{$("#lerr").textContent="";if(!tc)initAuth();if(!tc){if(!$("#lerr").textContent)$("#lerr").textContent="Carregando o login do Google… tente de novo.";return}tc.requestAccessToken({prompt:localStorage.getItem("airo_hint")?"":"select_account"})};
+$("#sync").onclick=async()=>{if(syncState!=="auth"&&syncState!=="err")return;try{await getTok();await push()}catch(e){setSync("auth")}};
+$("#ref").onclick=async()=>{if(!sid)return;try{dirty()?await push():await pull()}catch(e){setSync(typeof e==="string"?"auth":"err")}};
+$("#out").onclick=async()=>{if(dirty()&&sid)await push();tok=null;exp=0;user=null;sid=null;S.leads=[];localStorage.removeItem("airo_hint");$("#app").hidden=true;$("#login").hidden=false;$("#lerr").textContent="";render()};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&sid&&!busy&&!dirty()&&Date.now()<exp&&!$("#dlg").open)pull(true).catch(()=>{})});
+addEventListener("beforeunload",e=>{if(dirty()&&(pend||busy)){e.preventDefault();e.returnValue=""}});
+initAuth();
+</script></body></html>
